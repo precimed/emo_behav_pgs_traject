@@ -1,0 +1,79 @@
+TITLE: lpa_5c_step3_dep
+DATA: FILE = "N:/durable/users/norarba/
+FLA2_LPA_c/mplus/data/data_for_mplus_step3.dat"; 
+VARIABLE: 
+NAMES = EXT_C_18 EXT_C_3Y EXT_C_5Y INT_C_18 INT_C_3Y INT_C_5Y DEP_C_8Y CD_C_8YR
+     HYP_C_8Y INA_C_8Y ODD_C_8Y ANX_C_8Y SEX BIRTH_YR ANYEMO ADJPGS_D ADJPGS_A
+     ADJPGS_B ADJPGS_N I1 S1 I2 S2 C_I1 C_S1 C_I2 C_S2 CPROB1 CPROB2 CPROB3 CPROB4
+     CPROB5 CC IID M_ID by_cat; 
+MISSING=.;
+USEVARIABLES= SEX by_cat CC ANYEMO ADJPGS_D;
+NOMINAL = CC;
+CATEGORICAL=ANYEMO;
+IDVARIABLE= IID;
+CLUSTER=m_id;
+CLASSES= c(5);
+
+ANALYSIS: type=complex mixture; estimator=MLR; STARTS= 0;
+
+MODEL:
+%OVERALL%
+!Latent profile on cov(s)
+c ON SEX by_cat ADJPGS_D;
+!Distal outcome(s) on cov(s)
+ANYEMO ON SEX  by_cat;
+
+!logits from step2 start
+!
+%c#1%
+[cc#1@9.728 cc#2@9.257 cc#3@4.677 cc#4@6.238];
+[ANYEMO$1] (d1);
+%c#2%
+[cc#1@9.095 cc#2@13.796 cc#3@8.247 cc#4@8.747];
+[ANYEMO$1] (d2);
+%c#3%
+[cc#1@1.227 cc#2@4.993 cc#3@4.898 cc#4@2.295];
+[ANYEMO$1] (d3);
+%c#4%
+[cc#1@3.856 cc#2@6.391 cc#3@2.967 cc#4@6.621];
+[ANYEMO$1] (d4);
+%c#5%
+[cc#1@-2.839 cc#2@-0.265 cc#3@-3.458 cc#4@-1.195];
+[ANYEMO$1] (d5);
+!
+!logits from step2 end
+
+MODEL CONSTRAINT:
+New(prob1 prob2 prob3 prob4 prob5 
+odds1 odds2 odds3 odds4 odds5 
+or12 or32 or42 or52 !Ref class
+or31 or41 or51 !all other
+or43 or53 !all other
+or54 ; !all other
+prob1 = 1/(1+exp(d1));
+prob2 = 1/(1+exp(d2));
+prob3 = 1/(1+exp(d3));
+prob4 = 1/(1+exp(d4));
+prob5 = 1/(1+exp(d5));
+odds1 = prob1/(1-prob1);
+odds2 = prob2/(1-prob2);
+odds3 = prob3/(1-prob3);
+odds4 = prob4/(1-prob4);
+odds5 = prob5/(1-prob5);
+or12 = odds1/odds2; 
+or32 = odds3/odds2;
+or42 = odds4/odds2;
+or52 = odds5/odds2;
+or31 = odds3/odds1;
+or41 = odds4/odds1;
+or51 = odds5/odds1;
+or43 = odds4/odds3;
+or53 = odds5/odds3;
+or54 = odds5/odds4;
+ 
+output:  sampstat TECH1 SVALUES CINTERVAL;
+
+savedata: FORMAT IS f10.5;
+results are decimals.dat;
+FILE IS lpa_5c.dat; 
+SAVE IS CPROB;
