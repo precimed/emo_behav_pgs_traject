@@ -1,0 +1,41 @@
+TITLE: lpa_6c
+DATA: FILE = "N:/durable/users/norarba/
+FLA2_LPA_c/mplus/data/data_for_mplus.dat";
+VARIABLE: 
+NAMES = BARN_NR preg_id sex anyemo dep anx bd emo_adl dep_adl anx_adl bd_adl m_id
+     f_id birth_yr ext_c_18m ext_c_5yr ext_c_3yr int_c_18m int_c_5yr int_c_3yr
+     ina_c_8yr hyp_c_8yr cd_c_8yr odd_c_8yr anx_c_8yr dep_c_8yr adjpgs_dep
+     adjpgs_anx adjpgs_bd adjpgs_neur IID; 
+MISSING=.;
+USEVARIABLES= 
+ext_c_18m ext_c_3yr ext_c_5yr int_c_18m int_c_3yr int_c_5yr dep_c_8yr
+     cd_c_8yr hyp_c_8yr ina_c_8yr odd_c_8yr anx_c_8yr;
+AUXILIARY= sex birth_yr anyemo adjpgs_dep adjpgs_anx adjpgs_bd adjpgs_neur;
+IDVARIABLE= IID;
+CLUSTER=m_id;
+CLASSES= Cc (6);
+
+ANALYSIS: type=complex mixture; estimator=MLR; STARTS= 500 20;
+
+MODEL:
+%OVERALL%
+i1 s1 | ext_c_18m@0 ext_c_3yr@1.5 ext_c_5yr@3.5;
+i2 s2 | int_c_18m@0 int_c_3yr@1.5 int_c_5yr@3.5;  
+
+[dep_c_8yr];
+[anx_c_8yr];
+[cd_c_8yr];
+[odd_c_8yr];
+[ina_c_8yr];
+[hyp_c_8yr];
+
+dep_c_8yr WITH anx_c_8yr cd_c_8yr odd_c_8yr ina_c_8yr hyp_c_8yr;
+anx_c_8yr WITH cd_c_8yr odd_c_8yr ina_c_8yr hyp_c_8yr;
+cd_c_8yr WITH odd_c_8yr ina_c_8yr hyp_c_8yr;
+odd_c_8yr WITH ina_c_8yr hyp_c_8yr;
+ina_c_8yr WITH hyp_c_8yr;
+
+output:  sampstat stdyx TECH1 TECH11 SVALUES CINTERVAL ENTROPY;
+
+savedata: FILE IS lpa_6c.dat; 
+SAVE IS CPROB;
